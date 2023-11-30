@@ -28,7 +28,48 @@ const createCategory = async(req, res) =>{
     }
 }
 
+const updateCategory = async (req, res) => {
+  const { id } = req.params;
+  const category = await Categories.findById(id);
+ 
+  if (!category) {
+    return res.status(404).json({ msg: 'Categoria no encontrada' });
+  }
+
+  if (req.body) {
+    Object.assign(category, req.body)
+    category.modifiedAt = new Date();
+  }
+
+  try {
+    const updatedCategory = await category.save();
+    res.json(updatedCategory);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: 'Error al actualizar el usuario' });
+  }
+};
+
+const deleteCategory = async (req, res) => {
+    const { id } = req.params;
+    const category = await Categories.findById(id);
+
+    if (!category) {
+        return res.status(404).json({ msg: 'Categoria no encontrado' });
+    }
+
+    try {
+        await category.deleteOne();
+        res.json({ msg: 'Categoria eliminado' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: 'Error al eliminar la categoria' });
+    }
+}
+
 export {
     getAllCategories,
-    createCategory
+    createCategory,
+    updateCategory,
+    deleteCategory
 }
