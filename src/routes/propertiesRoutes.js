@@ -2,7 +2,9 @@ import express from 'express';
 import {
   getAllProperties,
   getPropertyById,
-  // getPropertiesByUserId,
+  getPropertiesByUserId,
+  getPropertyByCategoryId,
+  getPropertyByPriceId,
   addProperty,
   updateProperty,
   deleteProperty,
@@ -12,7 +14,9 @@ const router = express.Router();
 
 router.get('/', getAllProperties);
 router.get('/:id', getPropertyById);
-// router.get('/user/:id', getPropertiesByUserId)
+router.get('/user/:id', getPropertiesByUserId)
+router.get('/category/:id', getPropertyByCategoryId)
+router.get('/price/:id', getPropertyByPriceId)
 
 router.post('/', addProperty);
 

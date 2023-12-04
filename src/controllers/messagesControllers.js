@@ -2,6 +2,16 @@ import Messages from '../models/messagesModel.js'
 import Properties from '../models/propertiesModel.js'
 import Users from '../models/usersModel.js'
 
+const getAllMessages = async (req, res) => {
+    try {
+      const message = await Messages.find();
+      res.json(message);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ msg: 'Error al obtener todos los mensajes' });
+    }
+  };
+
 const getMessagesById = async(req, res) => {
     try {
         const { id } = req.params;
@@ -101,6 +111,7 @@ const deleteMessage = async(req, res) => {
 }
 
 export{
+    getAllMessages,
     getMessagesById,
     getMessageByPropertyId,
     createMessage,
