@@ -42,29 +42,66 @@ const getPropertyById = async (req, res) => {
   }
 };
 
-// const getPropertiesByUserId = async (req, res) =>{
+const getPropertiesByUserId = async (req, res) =>{
 
-//   try {
-//     const {id} = req.params;
-//     const filter = {
-//       userId: id
-//     }
+  try {
+    const {id} = req.params;
+    const filter = {
+      userId: id
+    }
 
-//     const properties = await Properties.find(filter)
+    const properties = await Properties.find(filter)
 
-//     if (!properties) {
-//       return res.status(404).json({ msg: "Propiedades no encontradas" });
-//     }
+    if (!properties) {
+      return res.status(404).json({ msg: "Propiedades no encontradas" });
+    }
 
-//     writeFileSync('./propiedad.jpg', properties.imagen);
+    // writeFileSync('./propiedad.jpg', properties.imagen);
 
 
-//     res.json(properties)
-//   } catch (error) {
-//     res.status(500).json({ msg: 'Error al buscar las propiedades' });
-//   }
-  
-// }
+    res.json(properties)
+  } catch (error) {
+    res.status(500).json({ msg: 'Error al buscar las propiedades' });
+  }
+}
+
+const getPropertyByCategoryId = async(req,res) =>{
+  const {id} = req.params;
+    const filter = {
+      categoriaId: id
+    }
+    const properties = await Properties.find(filter);
+  try {
+      if (!properties) {
+        return res.status(404).json({ msg: "Propiedades no encontradas" });
+      }
+    
+    // writeFileSync('./propiedad.jpg', properties.imagen);
+    res.json(properties)
+  } catch (error) {
+    console.log(properties)
+    res.status(500).json({ msg: 'Error al buscar las propiedades' });
+  }
+}
+
+const getPropertyByPriceId = async(req,res) =>{
+  const {id} = req.params;
+    const filter = {
+      precioId: id
+    }
+    const properties = await Properties.find(filter);
+  try {
+      if (!properties) {
+        return res.status(404).json({ msg: "Propiedades no encontradas" });
+      }
+    
+    // writeFileSync('./propiedad.jpg', properties.imagen);
+    res.json(properties)
+  } catch (error) {
+    console.log(properties)
+    res.status(500).json({ msg: 'Error al buscar las propiedades' });
+  }
+}
 
 const addProperty = async (req, res) => {
   const {
@@ -168,7 +205,9 @@ const deleteProperty = async (req, res) => {
 export { 
   getAllProperties, 
   getPropertyById, 
-  // getPropertiesByUserId,
+  getPropertiesByUserId,
+  getPropertyByCategoryId,
+  getPropertyByPriceId,
   addProperty, 
   updateProperty,
   deleteProperty
