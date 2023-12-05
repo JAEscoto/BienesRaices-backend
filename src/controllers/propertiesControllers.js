@@ -18,6 +18,7 @@ const getAllProperties = async (req, res) => {
     }
 
     res.json(properties);
+    // console.log(properties)
   } catch (error) {
     console.log(error);
     res.status(404).json({ msg: 'No se han registrado propiedades' });
@@ -32,8 +33,6 @@ const getPropertyById = async (req, res) => {
     if (!property) {
       return res.status(404).json({ msg: 'Propiedad no encontrada' });
     }
-
-    writeFileSync('./propiedad.jpg', property.imagen);
 
     res.json(property);
   } catch (error) {
@@ -56,9 +55,6 @@ const getPropertiesByUserId = async (req, res) =>{
       return res.status(404).json({ msg: "Propiedades no encontradas" });
     }
 
-    // writeFileSync('./propiedad.jpg', properties.imagen);
-
-
     res.json(properties)
   } catch (error) {
     res.status(500).json({ msg: 'Error al buscar las propiedades' });
@@ -75,9 +71,9 @@ const getPropertyByCategoryId = async(req,res) =>{
       if (!properties) {
         return res.status(404).json({ msg: "Propiedades no encontradas" });
       }
-    
-    // writeFileSync('./propiedad.jpg', properties.imagen);
+  
     res.json(properties)
+    console.log("Se pidieron propiedades:" , properties)
   } catch (error) {
     console.log(properties)
     res.status(500).json({ msg: 'Error al buscar las propiedades' });
@@ -100,6 +96,43 @@ const getPropertyByPriceId = async(req,res) =>{
   } catch (error) {
     console.log(properties)
     res.status(500).json({ msg: 'Error al buscar las propiedades' });
+  }
+}
+
+const getPropertyByTitulo = async(req,res) =>{
+  try {
+    const { titulo } = req.query;
+
+    if (!titulo) {
+      return res.status(400).json({ msg: 'Se requiere un título para la búsqueda' });
+    }
+
+    const properties = await Properties.find({ titulo: { $regex: new RegExp(titulo, 'i') } });
+
+    res.json(properties);
+    console.log("Se pidieron por titulo: ", properties)
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: 'Error al buscar propiedades por título' });
+  }
+}
+
+const getPropertiesByStatus = async(req, res) =>{
+  try {
+    const { enVenta } = req.query;
+
+    if (enVenta === undefined) {
+      return res.status(400).json({ msg: 'Se requiere el parámetro "enVenta" para la búsqueda' });
+    }
+
+    const properties = await Properties.find({ enVenta });
+
+    res.json(properties);
+    console.log(properties)
+    console.log(`Propiedades ${enVenta ? 'en Venta' : 'en Renta'}: `, properties);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: 'Error al obtener propiedades por estado de venta' });
   }
 }
 
@@ -208,6 +241,8 @@ export {
   getPropertiesByUserId,
   getPropertyByCategoryId,
   getPropertyByPriceId,
+  getPropertyByTitulo,
+  getPropertiesByStatus,
   addProperty, 
   updateProperty,
   deleteProperty
