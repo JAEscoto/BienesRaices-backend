@@ -14,7 +14,6 @@ const getAllProperties = async (req, res) => {
       let property = properties[i];
 
       const user = await Users.findById(property.userId).select('nombre primerApellido');
-      properties[i].userName = user.nombre + ' ' + user.primerApellido;
     }
 
     res.json(properties);
