@@ -1,6 +1,7 @@
 import { emailRegistro, emailOlvidePassword } from '../helpers/emails.js';
 import Users from '../models/usersModel.js';
-import generateId from '../helpers/generateId.js';
+import { generarJWT, generarId } from '../helpers/tokens.js';
+
 
 const getAllUsers = async (req, res) => {
   try {
@@ -28,42 +29,54 @@ const getUserById = async (req, res) => {
   }
 };
 
-const confirmarUser = async (req, res) =>{
-  const { token } = req.params;
-
+const autenticar = async (req, res) => {
   try {
-    // Verificar si el token es válido
-    const usuario = await Users.findOne({ token }); // Cambia la lógica según el modelo de tu Usuario en MongoDB
+    const { email, password } = req.body;
 
-    if (!usuario) {
-      return res.status(400).json({
-        mensaje: 'Hubo un error al confirmar tu cuenta. Intenta de nuevo.',
-        error: true
-      });
+    const user = await Users.findOne({ email });
+
+    if(!user) {
+      return res.status(400).json({ msg: 'El usuario no existe' });
     }
-    console.log(usuario)
-    console.log(usuario.token)
 
-    // Confirmar la cuenta
-    usuario.token = null;
-    usuario.confirmado = true;
-    await usuario.save();
+    if(!user.confirmado) {
+      return res.status(400).json({ msg: 'Tu cuenta no ha sido confirmada' });
+    }
 
-    return res.json({
-      mensaje: 'La cuenta se confirmó correctamente.'
-    });
-  } catch (error) {
-    console.error('Error al confirmar la cuenta:', error);
-    return res.status(500).json({
-      mensaje: 'Hubo un error al confirmar tu cuenta. Intenta de nuevo.',
-      error: true
-    });
+    if(!user.validatePassword(password)) {
+      return res.status(400).json({ msg: 'El password es incorrecto' });
+    }
+
+    const token = generarJWT({ id: user._id, nombre: user.nombre });
+
+    return res.status(200).json({ token });
+  } catch (err) {
+    console.log(err);
   }
 }
 
-// const autenticarLogin = async (req, res)=>{
-//   console.log("probando")
-// }
+const confirmarUser = async (req, res) =>{
+  try {
+    const { token } = req.params;
+
+    // Verificar si el token es válido
+    const user = await Users.findOne({ token }); // Cambia la lógica según el modelo de tu Usuario en MongoDB
+
+    if (!user) {
+      res.status(400).json({ msg: 'Hubo un error al confirmar tu cuenta. Intenta de nuevo' });
+    }
+
+    // Confirmar la cuenta
+    user.token = null;
+    user.confirmado = true;
+    await user.save();
+
+    res.json({ msg: 'La cuenta se confirmó correctamente' });
+  } catch (error) {
+    console.error('Error al confirmar la cuenta:', error);
+    return res.status(500).json({ msg: 'Hubo un error al confirmar tu cuenta. Intenta de nuevo' });
+  }
+}
 
 const createUser = async (req, res) => {
   const { email } = req.body;
@@ -91,39 +104,48 @@ const createUser = async (req, res) => {
   }
 };
 
-// const resetPassword = async (req, res) => {
-//   const { email } = req.body;
+const resetPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
 
-//   // Validación manual de email
-//   if (!isValidEmail(email)) {
-//       return res.status(400).json({ mensaje: 'Eso no parece un email válido' });
-//   }
+    const user = await Users.findOne({ email });
 
-//   // Buscar el usuario
-//   const usuario = await Usuario.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ msg: 'El email no pertenece a niguna cuenta' });
+    }
 
-//   if (!usuario) {
-//       return res.status(404).json({ mensaje: 'El Email no pertenece a ningún usuario' });
-//   }
+    user.token = generarId();
+    await user.save();
 
-//   // Generar un token y enviar el email
-//   usuario.token = generateId();
-//   await usuario.save();
+    emailOlvidePassword({
+      email: user.email,
+      nombre: user.nombre,
+      token: user.token
+    });
 
-//   // Enviar un email
-//   emailOlvidePassword({
-//       email: usuario.email,
-//       nombre: usuario.nombre,
-//       token: usuario.token
-//   });
+    res.json({ msg: 'Hemos enviado un email con las instrucciones' });
+  } catch (err) {
+    console.log(err);
+  }
+}
 
-//   // Enviar una respuesta al cliente
-//   res.json({ mensaje: 'Hemos enviado un email con las instrucciones' });
-// }
+const nuevoPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
 
-// function isValidEmail(email) {
-//   return /\S+@\S+\.\S+/.test(email);
-// }
+    const user = await Users.findOne({ token });
+
+    user.password = password;
+    user.token = null;
+
+    await user.save();
+
+    res.json({ msg: 'Password guardado correctamente' });
+  } catch (err) {
+    console.log(err);
+  }
+}
 
 
 const updateUser = async (req, res) => {
@@ -168,9 +190,10 @@ const deleteUser = async (req, res) => {
 export { 
   getAllUsers,
   confirmarUser,
+  autenticar,
+  resetPassword,
+  nuevoPassword,
   createUser,
-  // resetPassword,
-  // autenticarLogin,
   updateUser, 
   deleteUser, 
   getUserById 

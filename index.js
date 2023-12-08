@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from "dotenv";
 
-import db from './src/config/db.js';
+import connectDB from './src/config/db.js';
 
 import usersRoutes from './src/routes/usersRoutes.js';
 import pricesRouter from './src/routes/pricesRoutes.js';
@@ -16,6 +16,8 @@ app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb', extended: true}));
 
 dotenv.config();
+
+connectDB();
 
 const corsOptions = {
   origin: 'http://localhost:4200',

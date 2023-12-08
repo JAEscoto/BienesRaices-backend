@@ -1,14 +1,16 @@
 import mongoose from 'mongoose';
-import express from 'express';
 
-const db = express();
 const port = 3000;
 
-const url = 'mongodb://127.0.0.1:27017/BienesRaices';
+const connectDB = async () => {
+  try {
+      await mongoose.connect(process.env.DB_URL);
+      console.log(`Conectado a la base de datos en el puerto ${port}`);
+  } catch (error) {
+      console.log('ERROR');
+      console.log(error);
+      process.exit(1); 
+  }
+}
 
-mongoose
-  .connect(url)
-  .then(() => console.log(`La DB funca en el puerto: ${port}`))
-  .catch((error) => console.log(error));
-
-export default db;
+export default connectDB;
